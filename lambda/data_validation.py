@@ -23,9 +23,10 @@ def handler(event, context):
         else:
             print(f"Invalid record: {row}")
 
-    # Further processing can be done here, such as storing valid records elsewhere
-
+    # Return success
     return {
-        'statusCode': 200,
-        'body': f"Processed {len(valid_records)} valid records."
+        'status': 200,
+        'sourceBucketName': bucket_name,
+        'sourceKey': key,
+        'processedKey': 'processed_' + key.split('/')[-1]
     }

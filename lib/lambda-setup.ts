@@ -23,5 +23,22 @@ export const createLambda = (scope: Construct) => {
     principal: new iam.ServicePrincipal("s3.amazonaws.com"),
     sourceArn: "arn:aws:s3:::cdk101stack-myfirstbucketb8884501-buaggk370hah", // ARN of the S3 bucket
   });
-  return { parseValidationData };
+
+  // Data Processing Lambda Layer
+  const pandasLayer = new lambda.LayerVersion(scope, "PandasLayer", {
+    code: lambda.Code.fromAsset("./pandas_layer/pandas_layer.zip"), // Adjust the path to where your ZIP file is located
+    compatibleRuntimes: [lambda.Runtime.PYTHON_3_9], // Specify compatible runtimes
+    description: "A layer for pandas",
+  });
+
+  // Data Processing Lambda Function
+  const processData = new lambda.Function(scope, "ProcessCsvFunction", {
+    runtime: lambda.Runtime.PYTHON_3_9,
+    handler: "data_transformation.handler",
+    code: lambda.Code.fromAsset(path.join(__dirname, "../lambda")),
+    layers: [pandasLayer],
+    role: lambdaExecutionRole,
+  });
+
+  return { parseValidationData, processData };
 };

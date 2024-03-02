@@ -11,9 +11,10 @@ export const lambdaRole = (scope: Construct) => {
   lambdaExecutionRole.addToPolicy(
     new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: ["s3:GetObject"],
+      actions: ["s3:GetObject", "s3:putObject"],
       resources: [
         "arn:aws:s3:::cdk101stack-myfirstbucketb8884501-buaggk370hah/*",
+        "arn:aws:s3:::cdk101stack-processeddatabucket4e25d3b7-rwliej0g7s4j/*",
       ],
     }),
   );
