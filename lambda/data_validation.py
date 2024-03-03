@@ -5,10 +5,9 @@ import os
 def handler(event, context):
     s3 = boto3.client('s3')
 
-    # Get the S3 bucket and object key from the event
-    bucket_name = event['Records'][0]['s3']['bucket']['name']
-    key = event['Records'][0]['s3']['object']['key']
-
+    # Get the S3 bucket and object key from the even
+    bucket_name = event["bucketName"];
+    key = event["objectKey"];
     # Get the CSV file content
     csv_file = s3.get_object(Bucket=bucket_name, Key=key)
     csv_content = csv_file['Body'].read().decode('utf-8').splitlines()

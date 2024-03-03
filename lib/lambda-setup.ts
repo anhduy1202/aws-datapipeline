@@ -12,7 +12,7 @@ export const createLambda = (scope: Construct) => {
     scope,
     "ParseValidateCsvFunction",
     {
-      runtime: lambda.Runtime.PYTHON_3_9,
+      runtime: lambda.Runtime.PYTHON_3_10,
       handler: "data_validation.handler",
       code: lambda.Code.fromAsset(path.join(__dirname, "../lambda")),
       role: lambdaExecutionRole,
@@ -27,13 +27,13 @@ export const createLambda = (scope: Construct) => {
   // Data Processing Lambda Layer
   const pandasLayer = new lambda.LayerVersion(scope, "PandasLayer", {
     code: lambda.Code.fromAsset("./pandas_layer/pandas_layer.zip"), // Adjust the path to where your ZIP file is located
-    compatibleRuntimes: [lambda.Runtime.PYTHON_3_9], // Specify compatible runtimes
+    compatibleRuntimes: [lambda.Runtime.PYTHON_3_10], // Specify compatible runtimes
     description: "A layer for pandas",
   });
 
   // Data Processing Lambda Function
   const processData = new lambda.Function(scope, "ProcessCsvFunction", {
-    runtime: lambda.Runtime.PYTHON_3_9,
+    runtime: lambda.Runtime.PYTHON_3_10,
     handler: "data_transformation.handler",
     code: lambda.Code.fromAsset(path.join(__dirname, "../lambda")),
     layers: [pandasLayer],

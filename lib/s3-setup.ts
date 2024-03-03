@@ -1,3 +1,4 @@
+import * as cloudtrail from "aws-cdk-lib/aws-cloudtrail";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import * as cdk from "aws-cdk-lib";
@@ -20,6 +21,28 @@ export const createS3Buckets = (scope: Construct) => {
     objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_ENFORCED,
     blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
   });
-
+  createCloudTrail(scope, rawDataBucket);
   return { rawDataBucket, processedDataBucket };
+};
+
+const createCloudTrail = (
+  scope: Construct,
+  rawDataBucket: cdk.aws_s3.Bucket,
+) => {
+  // Create a CloudTrail trail
+  const trail = new cloudtrail.Trail(scope, "CDK101Trail", {
+    sendToCloudWatchLogs: true,
+  });
+
+  trail.addS3EventSelector(
+    [
+      {
+        bucket: rawDataBucket,
+      },
+    ],
+    {
+      includeManagementEvents: false,
+      readWriteType: cloudtrail.ReadWriteType.ALL,
+    },
+  );
 };
