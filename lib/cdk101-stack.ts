@@ -4,9 +4,8 @@ import { createS3Buckets } from "./s3-setup";
 import { createLambda } from "./lambda-setup";
 import { createStepFunction } from "./stepfunc-setup";
 import { stepFunctionRole } from "./iam-setup";
-import * as s3 from "aws-cdk-lib/aws-s3";
-import * as s3n from "aws-cdk-lib/aws-s3-notifications";
 import { createEventBridge } from "./eventbridge-setup";
+import { createGlue, createGlueDatabase } from "./glue-setup";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class Cdk101Stack extends cdk.Stack {
@@ -15,18 +14,26 @@ export class Cdk101Stack extends cdk.Stack {
 
     // S3 buckets
     const { rawDataBucket, processedDataBucket } = createS3Buckets(this);
+    // Glue Database
+    const { glueDatabase } = createGlueDatabase(this);
+    // Glue crawler
+    const { glueCrawler } = createGlue(this, rawDataBucket, glueDatabase);
     // Lambda Functions
-    const { parseValidationData, processData } = createLambda(this);
+    const { parseValidationData, startCrawlerLambda, sesNotificationLambda } =
+      createLambda(this, glueCrawler);
     // State Machine
-    const { dataProcessingStateMachine } = createStepFunction(this, [
-      parseValidationData,
-      processData,
-    ]);
+    const { dataProcessingStateMachine } = createStepFunction(
+      this,
+      [parseValidationData, startCrawlerLambda],
+      glueCrawler,
+    );
     // Event Bridge
-    const { s3EventRule } = createEventBridge(
+    const { s3EventRule, glueCrawlerEventRule } = createEventBridge(
       this,
       dataProcessingStateMachine,
       rawDataBucket,
+      glueCrawler,
+      sesNotificationLambda,
     );
   }
 }

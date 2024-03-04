@@ -8,6 +8,8 @@ export const createEventBridge = (
   scope: Construct,
   stateMachine: cdk.aws_stepfunctions.StateMachine,
   rawDatabucket: cdk.aws_s3.Bucket,
+  crawler: cdk.aws_glue.CfnCrawler,
+  sesNotificationLambda: cdk.aws_lambda.Function,
 ) => {
   const s3EventRule = new events.Rule(scope, "S3TriggerEventRule", {
     eventPattern: {
@@ -31,6 +33,23 @@ export const createEventBridge = (
       }),
     }),
   );
-  createEventBridgeRole(scope, stateMachine);
-  return { s3EventRule };
+  const glueCrawlerEventRule = new events.Rule(scope, "GlueCrawlerEventRule", {
+    eventPattern: {
+      source: ["aws.glue"],
+      detailType: ["Glue Crawler State Change"],
+      detail: {
+        crawlerName: [crawler.ref],
+      },
+    },
+  });
+  glueCrawlerEventRule.addTarget(
+    new targets.LambdaFunction(sesNotificationLambda),
+  );
+  createEventBridgeRole(
+    scope,
+    stateMachine,
+    sesNotificationLambda,
+    glueCrawlerEventRule,
+  );
+  return { s3EventRule, glueCrawlerEventRule };
 };

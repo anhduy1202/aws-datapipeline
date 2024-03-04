@@ -41,7 +41,6 @@ const createCloudTrail = (
       },
     ],
     {
-      includeManagementEvents: false,
       readWriteType: cloudtrail.ReadWriteType.ALL,
     },
   );
