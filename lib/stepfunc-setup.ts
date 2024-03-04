@@ -7,17 +7,22 @@ import { stepFunctionRole } from "./iam-setup";
 export const createStepFunction = (
   scope: Construct,
   lambdas: cdk.aws_lambda.Function[],
+  crawler: cdk.aws_glue.CfnCrawler,
 ) => {
   const validateDataTask = new tasks.LambdaInvoke(scope, "Validate Data", {
     lambdaFunction: lambdas[0],
   });
 
-  const transformDataTask = new tasks.LambdaInvoke(scope, "Transform Data", {
+  const startCrawlerTask = new tasks.LambdaInvoke(scope, "Start Crawler", {
     lambdaFunction: lambdas[1],
-    inputPath: "$",
   });
 
-  const definition = validateDataTask.next(transformDataTask);
+  // const transformDataTask = new tasks.LambdaInvoke(scope, "Transform Data", {
+  //   lambdaFunction: lambdas[1],
+  //   inputPath: "$",
+  // });
+
+  const definition = validateDataTask.next(startCrawlerTask);
 
   const dataProcessingStateMachine = new sfn.StateMachine(
     scope,
@@ -30,6 +35,7 @@ export const createStepFunction = (
     scope,
     dataProcessingStateMachine,
     lambdas,
+    crawler,
   );
   return { dataProcessingStateMachine };
 };
